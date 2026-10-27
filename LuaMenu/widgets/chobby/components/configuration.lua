@@ -259,8 +259,9 @@ function Configuration:init()
 		["it"] = {locale = "it", name="Italiano"},
 	}
 
-	self.lobby_fullscreen = 1
-	self.game_fullscreen = 1
+	local isMac = Platform.osFamily == "MacOS" or Platform.osFamily == "MacOSX"
+	self.lobby_fullscreen = isMac and 2 or 1
+	self.game_fullscreen = isMac and 2 or 1
 
 	self.chatFontSize = 18
 

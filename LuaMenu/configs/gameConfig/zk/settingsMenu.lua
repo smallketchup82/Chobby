@@ -1411,6 +1411,10 @@ end
 
 local function DefaultPresetFunc()
 	local gameDefault = settingsConfig[2].presets[1].settings
+	if isMac then
+		Spring.Echo("Low settings preset", Platform.osFamily)
+		return Spring.Utilities.MergeTable(gameDefault, settingsConfig[1].presets[3].settings, true)
+	end
 
 	if Platform then
 		local gpuMemorySize = Platform.gpuMemorySize or 0
