@@ -1,5 +1,11 @@
 Chobby, the ingame lobby.
 
+The `macos-port` branch adds native macOS Retina controls and restart notices,
+hides the frame limiter on macOS, and keeps the port's game widgets under
+`macos/game-data`. Build and distribution tooling lives in
+[ZkMacOS](https://github.com/smallketchup82/ZkMacOS). These changes were developed
+with OpenAI Codex assistance; upstream installation instructions follow below.
+
 Installation
 ============
 
