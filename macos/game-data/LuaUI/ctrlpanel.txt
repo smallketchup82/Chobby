@@ -1,0 +1,2 @@
+// Zero-K supplies its own command panel through Chili.
+frameAlpha 0

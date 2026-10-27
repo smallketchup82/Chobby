@@ -1353,6 +1353,47 @@ local settingsDefault = {
 	GcTimeMult = "Recommended",
 }
 
+local isMac = Platform.osFamily == "MacOS" or Platform.osFamily == "MacOSX"
+if isMac then
+	local labels = {[0] = "Standard", "Retina text and UI", "Full Retina"}
+	local retinaSetting = {
+		name = "MacRetinaMode",
+		humanName = "Retina / High-DPI",
+		desc = "Shared by the lobby and game. Retina text and UI keeps the world at standard resolution. Full Retina also renders the main scene at backing resolution. Restart Zero-K to apply.",
+		defaultFunction = function()
+			return labels[math.max(0, math.min(2, Spring.GetConfigInt("MacRetinaMode", 1)))]
+		end,
+		options = {},
+	}
+	for mode = 0, 2 do
+		local selectedMode = mode
+		retinaSetting.options[#retinaSetting.options + 1] = {
+			name = labels[mode],
+			applyFunction = function()
+				if Spring.GetConfigInt("MacRetinaMode", 1) ~= selectedMode then
+					WG.Chobby.InformationPopup("Quit Zero-K completely and reopen it to apply the new Retina mode. Starting another battle will not apply it.",
+						{heading = "Restart required", width = 480, height = 270})
+				end
+				return {MacRetinaMode = selectedMode}
+			end,
+		}
+	end
+
+	local graphicsSettings = settingsConfig[1].settings
+	for index = #graphicsSettings, 1, -1 do
+		if graphicsSettings[index].name == "VSync" then table.remove(graphicsSettings, index) end
+	end
+	for index, setting in ipairs(graphicsSettings) do
+		if setting.name == "ActiveGraphicsLabel" then
+			table.insert(graphicsSettings, index + 1, retinaSetting)
+			break
+		end
+	end
+	for _, preset in ipairs(settingsConfig[1].presets) do preset.settings.VSync = nil end
+	settingsDefault.VSync = nil
+	settingsDefault.MacRetinaMode = retinaSetting.defaultFunction()
+end
+
 local settingsNames = {}
 for i = 1, #settingsConfig do
 	local subSettings = settingsConfig[i].settings

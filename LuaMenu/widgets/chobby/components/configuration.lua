@@ -547,9 +547,13 @@ function Configuration:SetConfigData(data)
 
 	if data.settingsMenuValues then
 		for name, value in pairs(data.settingsMenuValues) do
-			self:SetSettingsConfigOption(name, value)
+			-- The Retina mode is shared with the in-game settings. Its engine
+			-- value takes precedence over a saved lobby selection.
+			if name ~= "MacRetinaMode" then self:SetSettingsConfigOption(name, value) end
 		end
 	end
+	local retinaSetting = self.gameConfig.settingsNames.MacRetinaMode
+	if retinaSetting then self:SetSettingsConfigOption("MacRetinaMode", retinaSetting.defaultFunction()) end
 end
 
 function Configuration:GetConfigData()
