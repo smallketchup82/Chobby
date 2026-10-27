@@ -12,7 +12,7 @@ function widget:GetInfo()
 end
 
 options_path = "Settings/Camera/Trackpad"
-options_order = {"enabled", "pan", "zoom", "tilt", "invert", "momentum", "help"}
+options_order = {"enabled", "threeFinger", "pan", "zoom", "tilt", "invert", "momentum", "help"}
 
 local function BooleanOption(name, key, default)
 	return {
@@ -45,18 +45,22 @@ end
 
 options = {
 	enabled = BooleanOption("Trackpad camera controls", "MacTrackpadEnabled", true),
+	threeFinger = BooleanOption("Three-finger tilt", "MacTrackpadThreeFingerTilt", false),
 	pan = SensitivityOption("Pan sensitivity", "MacTrackpadPanSpeed"),
 	zoom = SensitivityOption("Pinch sensitivity", "MacTrackpadZoomSpeed"),
 	tilt = SensitivityOption("Tilt sensitivity", "MacTrackpadTiltSpeed"),
 	invert = BooleanOption("Reverse camera pan", "MacTrackpadInvertPan", false),
 	momentum = BooleanOption("Camera momentum", "MacTrackpadMomentum", false),
 	help = {
-		name = "Two fingers: pan. Pinch: zoom. Three fingers up/down: tilt. Option + two fingers: tilt fallback. Taps and right-clicks use macOS settings. Move Mission Control/App Exposé to four fingers if they intercept tilt.",
+		name = "Two fingers: pan. Pinch: zoom. Option + two fingers: tilt (swipe down to tilt up). Enable three-finger tilt above to use the same direction without Option. Leave it off to avoid palm gestures. Taps and right-clicks use macOS settings.",
 		type = "text",
 		simpleMode = true,
 		everyMode = true,
 	},
 }
+
+options.threeFinger.noSave = true
+options.threeFinger.desc = "When off, tilt only with Option + two fingers. Changes apply immediately."
 
 function widget:Initialize()
 	if Platform.osFamily ~= "MacOS" and Platform.osFamily ~= "MacOSX" then
