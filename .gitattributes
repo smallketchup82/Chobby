@@ -6,6 +6,3 @@
 *.fs   text
 *.json text
 *.css  text
-
-# Unified diff context deliberately starts with a space before source tabs.
-macos/*.patch -whitespace
