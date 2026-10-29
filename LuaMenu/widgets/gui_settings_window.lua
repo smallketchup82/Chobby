@@ -973,6 +973,36 @@ local function GetLobbyTabControls()
 	}
 	children[#children + 1] = autoLogin
 	offset = offset + ITEM_OFFSET
+	if Platform.osFamily == "MacOS" or Platform.osFamily == "MacOSX" then
+		local crashControl, errorControl
+		crashControl, offset = AddCheckboxSetting(offset, "Automatic Crash Reporting", "macAutomaticCrashReporting", false,
+			function(enabled)
+				if enabled and Configuration.macDisableAllTelemetry then crashControl:SetToggle(false); return end
+				Spring.SetConfigInt("MacAutomaticCrashReporting", enabled and 1 or 0)
+			end,
+			"Send filtered crash reports strongly linked to the macOS port through Sentry. Includes versions, commits and a crash stack; no full logs, chat, account details, machine IDs or replays. Sentry receives your IP address. When off, you are asked before sending each qualifying crash report. Off by default.")
+		children[#children + 1] = crashControl
+		errorControl, offset = AddCheckboxSetting(offset, "Automatic Error Reporting", "macAutomaticErrorReporting", false,
+			function(enabled)
+				if enabled and Configuration.macDisableAllTelemetry then errorControl:SetToggle(false); return end
+				Spring.SetConfigInt("MacAutomaticErrorReporting", enabled and 1 or 0)
+			end,
+			"Also send recognized macOS-port errors through Sentry without asking. Independent of Automatic Crash Reporting. Sends technical error identifiers, versions and commits without user identifiers or full logs. Sentry receives your IP address. Off by default.")
+		children[#children + 1] = errorControl
+		children[#children + 1], offset = AddCheckboxSetting(offset, "Disable All Telemetry", "macDisableAllTelemetry", false,
+			function(disabled)
+				Spring.SetConfigInt("MacDisableAllTelemetry", disabled and 1 or 0)
+				if disabled then
+					crashControl:SetToggle(false)
+					errorControl:SetToggle(false)
+					Configuration:SetConfigValue("macAutomaticCrashReporting", false)
+					Configuration:SetConfigValue("macAutomaticErrorReporting", false)
+					Spring.SetConfigInt("MacAutomaticCrashReporting", 0)
+					Spring.SetConfigInt("MacAutomaticErrorReporting", 0)
+				end
+			end,
+			"Requires restarting Zero-K to take effect, including when turning this off. After restart, forces both automatic reporting options off, suppresses crash-report prompts and prevents all Sentry communication. This does not disable game networking or update checks.")
+	end
 
 	if not Configuration.gameConfig.disableSteam then
 		children[#children + 1], offset = AddCheckboxSetting(offset, i18n("login_with_steam"), "wantAuthenticateWithSteam", true)
@@ -1960,6 +1990,15 @@ local onBattleAboutToStart
 
 local function DelayedInitialize()
 	local Configuration = WG.Chobby.Configuration
+	if Platform.osFamily == "MacOS" or Platform.osFamily == "MacOSX" then
+		if Configuration.macDisableAllTelemetry then
+			Configuration:SetConfigValue("macAutomaticCrashReporting", false)
+			Configuration:SetConfigValue("macAutomaticErrorReporting", false)
+		end
+		Spring.SetConfigInt("MacDisableAllTelemetry", Configuration.macDisableAllTelemetry and 1 or 0)
+		Spring.SetConfigInt("MacAutomaticCrashReporting", Configuration.macAutomaticCrashReporting and 1 or 0)
+		Spring.SetConfigInt("MacAutomaticErrorReporting", Configuration.macAutomaticErrorReporting and 1 or 0)
+	end
 	battleStartDisplay = Configuration.game_fullscreen or 1
 	lobbyFullscreen = Configuration.lobby_fullscreen or 1
 end
