@@ -548,13 +548,23 @@ function Configuration:SetConfigData(data)
 
 	if data.settingsMenuValues then
 		for name, value in pairs(data.settingsMenuValues) do
-			-- The Retina mode is shared with the in-game settings. Its engine
-			-- value takes precedence over a saved lobby selection.
-			if name ~= "MacRetinaMode" then self:SetSettingsConfigOption(name, value) end
+			-- Shared display settings use the engine value, including manual
+			-- springsettings.cfg edits, rather than a saved lobby selection.
+			if name ~= "MacRetinaMode" and name ~= "MacMetalFXSpatial" and name ~= "MacNotchFullscreen" and name ~= "MacDisplayLink" and name ~= "MacHDR" and name ~= "MacGPUSharing" then self:SetSettingsConfigOption(name, value) end
 		end
 	end
 	local retinaSetting = self.gameConfig.settingsNames.MacRetinaMode
 	if retinaSetting then self:SetSettingsConfigOption("MacRetinaMode", retinaSetting.defaultFunction()) end
+	local metalFXSetting = self.gameConfig.settingsNames.MacMetalFXSpatial
+	if metalFXSetting then self:SetSettingsConfigOption("MacMetalFXSpatial", metalFXSetting.defaultFunction()) end
+	local sharingSetting = self.gameConfig.settingsNames.MacGPUSharing
+	if sharingSetting then self:SetSettingsConfigOption("MacGPUSharing", sharingSetting.defaultFunction()) end
+	local displayLinkSetting = self.gameConfig.settingsNames.MacDisplayLink
+	if displayLinkSetting then self:SetSettingsConfigOption("MacDisplayLink", displayLinkSetting.defaultFunction()) end
+	local hdrSetting = self.gameConfig.settingsNames.MacHDR
+	if hdrSetting then self:SetSettingsConfigOption("MacHDR", hdrSetting.defaultFunction()) end
+	local notchSetting = self.gameConfig.settingsNames.MacNotchFullscreen
+	if notchSetting then self:SetSettingsConfigOption("MacNotchFullscreen", notchSetting.defaultFunction()) end
 end
 
 function Configuration:GetConfigData()

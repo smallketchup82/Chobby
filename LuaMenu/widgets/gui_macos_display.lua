@@ -12,4 +12,27 @@ function widget:RecvLuaMsg(message)
 	if mode and setting then
 		configuration:SetSettingsConfigOption("MacRetinaMode", setting.options[mode + 1].name)
 	end
+	local metalFX = tonumber(message:match("^macMetalFXSpatial ([01])$"))
+	local metalFXSetting = configuration and configuration.gameConfig.settingsNames.MacMetalFXSpatial
+	if metalFX and metalFXSetting then
+		configuration:SetSettingsConfigOption("MacMetalFXSpatial", metalFXSetting.options[metalFX + 1].name)
+	end
+	local notch = tonumber(message:match("^macNotchFullscreen ([01])$"))
+	local notchSetting = configuration and configuration.gameConfig.settingsNames.MacNotchFullscreen
+	if notch and notchSetting then
+		configuration:SetSettingsConfigOption("MacNotchFullscreen", notchSetting.options[notch + 1].name)
+	end
+	local hdr = tonumber(message:match("^macHDR ([01])$"))
+	local hdrSetting = configuration and configuration.gameConfig.settingsNames.MacHDR
+	if hdr and hdrSetting then
+		configuration:SetSettingsConfigOption("MacHDR", hdrSetting.options[hdr + 1].name)
+	end
+	local sharing = tonumber(message:match("^macGPUSharing ([01])$"))
+	local sharingSetting = configuration and configuration.gameConfig.settingsNames.MacGPUSharing
+	if sharing and sharingSetting then
+		configuration:SetSettingsConfigOption("MacGPUSharing", sharingSetting.options[sharing + 1].name)
+	end
+	local enabled = tonumber(message:match("^macDisplayLink ([01])$"))
+	local setting = configuration and configuration.gameConfig.settingsNames.MacDisplayLink
+	if enabled and setting then configuration:SetSettingsConfigOption("MacDisplayLink", setting.options[enabled + 1].name) end
 end

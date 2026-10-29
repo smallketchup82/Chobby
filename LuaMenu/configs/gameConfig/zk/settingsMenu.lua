@@ -1355,6 +1355,37 @@ local settingsDefault = {
 
 local isMac = Platform.osFamily == "MacOS" or Platform.osFamily == "MacOSX"
 if isMac then
+	local chatSetting = {
+		name = "MacAnnounceChat",
+		humanName = "ZkMacOS start message",
+		desc = "At each game start, tells all chat: Playing on ZkMacOS; sorry if technical issues disconnect me. Does not announce while spectating or watching replays.",
+		defaultFunction = function()
+			return Spring.GetConfigInt("MacAnnounceChat", 1) == 1 and "On" or "Off"
+		end,
+		options = {
+			{name = "Off", applyFunction = function() Spring.SetConfigInt("MacAnnounceChat", 0) end},
+			{name = "On", applyFunction = function() Spring.SetConfigInt("MacAnnounceChat", 1) end},
+		},
+	}
+	local markerSetting = {
+		name = "MacAnnounceMarker",
+		humanName = "ZkMacOS start marker",
+		desc = "At each game start, places a shared map marker at your commander's spawn position saying: Playing on ZkMacOS. Does not mark while spectating or watching replays.",
+		defaultFunction = function()
+			return Spring.GetConfigInt("MacAnnounceMarker", 1) == 1 and "On" or "Off"
+		end,
+		options = {
+			{name = "Off", applyFunction = function() Spring.SetConfigInt("MacAnnounceMarker", 0) end},
+			{name = "On", applyFunction = function() Spring.SetConfigInt("MacAnnounceMarker", 1) end},
+		},
+	}
+	table.insert(settingsConfig[2].settings, 1, chatSetting)
+	table.insert(settingsConfig[2].settings, 2, markerSetting)
+	settingsDefault.MacAnnounceChat = chatSetting.defaultFunction()
+	settingsDefault.MacAnnounceMarker = markerSetting.defaultFunction()
+	settingsConfig[2].presets[1].settings.MacAnnounceChat = "On"
+	settingsConfig[2].presets[1].settings.MacAnnounceMarker = "On"
+
 	local labels = {[0] = "Standard", "Retina text and UI", "Full Retina"}
 	local retinaSetting = {
 		name = "MacRetinaMode",
@@ -1365,6 +1396,67 @@ if isMac then
 		end,
 		options = {},
 	}
+	local metalFXSetting = {
+		name = "MacMetalFXSpatial",
+		humanName = "MetalFX spatial upscaling",
+		desc = "Upscales the game world in Retina text and UI mode, keeping UI sharp. Applies immediately in game. Has no effect in Standard or Full Retina mode, or on a non-Retina display. May reduce performance. Falls back to bilinear scaling if unavailable.",
+		defaultFunction = function()
+			return Spring.GetConfigInt("MacMetalFXSpatial", 0) == 1 and "On" or "Off"
+		end,
+		options = {
+			{name = "Off", apply = {MacMetalFXSpatial = 0}},
+			{name = "On", apply = {MacMetalFXSpatial = 1}},
+		},
+	}
+	local hdrSetting = {
+		name = "MacHDR",
+		humanName = "macOS HDR display output",
+		desc = "Displays the game's existing HDR lighting on a macOS HDR display. Preserves normal scene colors and UI white; adds no extra bloom or highlight expansion. Configure game lighting under Graphics / HDR (experimental). Applies immediately. Requires shared GPU textures; uses SDR if unavailable.",
+		defaultFunction = function()
+			return Spring.GetConfigInt("MacHDR", 0) == 1 and "On" or "Off"
+		end,
+		options = {
+			{name = "Off", apply = {MacHDR = 0}},
+			{name = "On", apply = {MacHDR = 1}},
+		},
+	}
+	local gpuSharingSetting = {
+		name = "MacGPUSharing",
+		humanName = "GPU resource sharing",
+		desc = "Experimental GPU resource sharing for MetalFX and SDR presentation. Avoids CPU pixel transfers but still waits for GPU completion. Applies immediately. HDR display output always requires sharing, even when this switch is off. Unsupported resources fall back to CPU transfers.",
+		defaultFunction = function()
+			return Spring.GetConfigInt("MacGPUSharing", 0) == 1 and "On" or "Off"
+		end,
+		options = {
+			{name = "Off", apply = {MacGPUSharing = 0}},
+			{name = "On", apply = {MacGPUSharing = 1}},
+		},
+	}
+	local displayLinkSetting = {
+		name = "MacDisplayLink", humanName = "Experimental DisplayLink frame pacing",
+		desc = "Paces frames using the display refresh. Experimental and disabled by default; may reduce performance. Applies immediately.",
+		defaultFunction = function() return Spring.GetConfigInt("MacDisplayLink", 0) == 1 and "On" or "Off" end,
+		options = {{name = "Off", apply = {MacDisplayLink = 0}}, {name = "On", apply = {MacDisplayLink = 1}}},
+	}
+	local notchSetting = {
+		name = "MacNotchFullscreen", humanName = "Notchful fullscreen",
+		desc = "Allows fullscreen to cover the camera-housing area. The resource HUD automatically adapts to the display's notch; other fullscreen modes keep the default layout. Uses desktop fullscreen without a separate Space. Restart Zero-K to apply.",
+		defaultFunction = function() return Spring.GetConfigInt("MacNotchFullscreen", 0) == 1 and "On" or "Off" end,
+		options = {},
+	}
+	for enabled = 0, 1 do
+		local value = enabled
+		notchSetting.options[#notchSetting.options + 1] = {
+			name = value == 1 and "On" or "Off",
+			applyFunction = function()
+				if Spring.GetConfigInt("MacNotchFullscreen", 0) ~= value then
+					WG.Chobby.InformationPopup("Quit Zero-K completely and reopen it to apply notchful fullscreen. Content may be hidden behind the notch.",
+						{heading = "Restart required", width = 480, height = 270})
+				end
+				return {MacNotchFullscreen = value}
+			end,
+		}
+	end
 	for mode = 0, 2 do
 		local selectedMode = mode
 		retinaSetting.options[#retinaSetting.options + 1] = {
@@ -1386,12 +1478,22 @@ if isMac then
 	for index, setting in ipairs(graphicsSettings) do
 		if setting.name == "ActiveGraphicsLabel" then
 			table.insert(graphicsSettings, index + 1, retinaSetting)
+			table.insert(graphicsSettings, index + 2, metalFXSetting)
+			table.insert(graphicsSettings, index + 3, hdrSetting)
+			table.insert(graphicsSettings, index + 4, gpuSharingSetting)
+			table.insert(graphicsSettings, index + 5, displayLinkSetting)
+			table.insert(graphicsSettings, index + 6, notchSetting)
 			break
 		end
 	end
 	for _, preset in ipairs(settingsConfig[1].presets) do preset.settings.VSync = nil end
 	settingsDefault.VSync = nil
 	settingsDefault.MacRetinaMode = retinaSetting.defaultFunction()
+	settingsDefault.MacMetalFXSpatial = metalFXSetting.defaultFunction()
+	settingsDefault.MacDisplayLink = displayLinkSetting.defaultFunction()
+	settingsDefault.MacHDR = hdrSetting.defaultFunction()
+	settingsDefault.MacGPUSharing = gpuSharingSetting.defaultFunction()
+	settingsDefault.MacNotchFullscreen = notchSetting.defaultFunction()
 end
 
 local settingsNames = {}
