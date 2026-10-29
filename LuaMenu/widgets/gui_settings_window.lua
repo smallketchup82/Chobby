@@ -691,12 +691,12 @@ local function GetTelemetryTabControls()
 	local children, offset = {}, 0
 	if Platform.osFamily == "MacOS" or Platform.osFamily == "MacOSX" then
 		local crashControl, errorControl
-		crashControl, offset = AddCheckboxSetting(offset, "Automatic Crash Reporting", "macAutomaticCrashReporting", false,
+		crashControl, offset = AddCheckboxSetting(offset, "Automatic Crash Reporting", "macAutomaticCrashReporting", true,
 			function(enabled)
 				if enabled and Configuration.macDisableAllTelemetry then crashControl:SetToggle(false); return end
 				Spring.SetConfigInt("MacAutomaticCrashReporting", enabled and 1 or 0)
 			end,
-			"Send filtered crash reports strongly linked to the macOS port through Sentry. Includes versions, commits and a crash stack; optional attachments follow the switches below. Sentry receives your IP address. When off, you are asked before sending each qualifying crash report. Off by default.")
+			"Send filtered crash reports strongly linked to the macOS port through Sentry. Includes versions, commits and a crash stack; optional attachments follow the switches below. Sentry receives your IP address. When off, you are asked before sending each qualifying crash report. On by default.")
 		children[#children + 1] = crashControl
 		errorControl, offset = AddCheckboxSetting(offset, "Automatic Error Reporting", "macAutomaticErrorReporting", false,
 			function(enabled)
@@ -2027,6 +2027,9 @@ local onBattleAboutToStart
 local function DelayedInitialize()
 	local Configuration = WG.Chobby.Configuration
 	if Platform.osFamily == "MacOS" or Platform.osFamily == "MacOSX" then
+		if Configuration.macAutomaticCrashReporting == nil then
+			Configuration:SetConfigValue("macAutomaticCrashReporting", true)
+		end
 		if Configuration.macDisableAllTelemetry then
 			Configuration:SetConfigValue("macAutomaticCrashReporting", false)
 			Configuration:SetConfigValue("macAutomaticErrorReporting", false)
