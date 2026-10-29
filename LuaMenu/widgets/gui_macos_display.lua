@@ -36,3 +36,26 @@ function widget:RecvLuaMsg(message)
 	local setting = configuration and configuration.gameConfig.settingsNames.MacDisplayLink
 	if enabled and setting then configuration:SetSettingsConfigOption("MacDisplayLink", setting.options[enabled + 1].name) end
 end
+
+local reportElapsed = 0
+function widget:Update(dt)
+	if Platform.osFamily ~= "MacOS" and Platform.osFamily ~= "MacOSX" then return end
+	reportElapsed = reportElapsed + dt
+	if reportElapsed < 1 then return end
+	reportElapsed = 0
+	local configuration = WG.Chobby and WG.Chobby.Configuration
+	if configuration and Spring.GetConfigInt("MacReportConfiguration", 0) == 1 then
+		local file = io.open("macos-report-lobby.json", "w")
+		if file then
+			file:write(Spring.Utilities.json.encode({settingsMenuValues = configuration.settingsMenuValues, game_settings = configuration.game_settings}))
+			file:close()
+		end
+	end
+	if Spring.GetGameName() ~= "" then return end
+	local request = io.open("macos-report-screenshot", "r")
+	if request then
+		request:close()
+		os.remove("macos-report-screenshot")
+		Spring.SendCommands("screenshot png")
+	end
+end
