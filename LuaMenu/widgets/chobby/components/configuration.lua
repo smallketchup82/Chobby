@@ -242,7 +242,7 @@ function Configuration:init()
 	self.enableTextToSpeech = true
 	self.showOldAiVersions = false
 	self.drawAtFullSpeed = false
-	self.lobbyIdleSleep = false
+	self.lobbyIdleSleep = true
 	self.rememberQueuesOnStart2 = true
 	self.blockedJoinBattles = false
 	self.channels = {}
